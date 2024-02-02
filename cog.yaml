@@ -1,0 +1,44 @@
+# Configuration for Cog ⚙️
+# Reference: https://github.com/replicate/cog/blob/main/docs/yaml.md
+
+build:
+  gpu: true
+  cuda: "11.8"
+  system_packages:
+    - "libgl1-mesa-glx"
+    - "libglib2.0-0"
+  python_version: "3.8"
+  python_packages:
+    - "accelerate==0.26.1"
+    - "basicsr==1.4.2"
+    - "diffusers==0.18.2"
+    - "einops==0.7.0"
+    - "imageio==2.33.1"
+    - "matplotlib==3.7.4"
+    - "mmdet==3.2.0"
+    - "mmpose==1.2.0" 
+    - "numpy==1.24.1"
+    - "omegaconf==2.3.0"
+    - "opencv_python==4.9.0.80"
+    - "openvino==2023.3.0"
+    - "pandas==2.0.3"
+    - "Pillow==10.2.0"
+    - "prettytable==3.9.0"
+    - "pytorch_lightning==2.1.3"
+    - "PyYAML==6.0.1"
+    - "safetensors==0.4.2"
+    - "scipy==1.10.1"
+    - "setuptools==68.2.2"
+    - "scikit-image==0.21.0"
+    - "timm==0.6.7"
+    - "torch==2.0.1"
+    - "torch_tb_profiler==0.4.3"
+    - "tqdm==4.66.1"
+    - "transformers==4.37.0"
+    - "xformers"
+
+  run:
+    - curl -o /usr/local/bin/pget -L "https://github.com/replicate/pget/releases/download/v0.3.1/pget" && chmod +x /usr/local/bin/pget
+
+# predict.py defines how predictions are run on your model
+predict: "predict.py:Predictor"
