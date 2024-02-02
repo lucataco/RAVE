@@ -19,7 +19,9 @@ from pipelines.sd_multicontrolnet_rave import RAVE_MultiControlNet
 warnings.filterwarnings("ignore")
 
 MODEL_CACHE = "checkpoints"
+CONTROL_CACHE = "pretrained_models"
 SD_URL = "https://storage.googleapis.com/replicate-weights/runwayml/stable-diffusion-v1-5/ded79e2/stable-diffusion-v1-5.tar"
+CONTROL_URL = "https://storage.googleapis.com/replicate-weights/rehg-lab/pretrained_models.tar"
 
 def init_device():
     device_name = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -35,8 +37,6 @@ def init_paths(input_ns):
     os.makedirs(save_dir, exist_ok=True)
     save_idx = max([int(x[-5:]) for x in os.listdir(save_dir)])+1 if os.listdir(save_dir) != [] else 0
     input_ns.save_path = os.path.join(save_dir, f'{input_ns.positive_prompts}-{str(save_idx).zfill(5)}')
-    
-    
     if '-' in input_ns.preprocess_name:
         input_ns.hf_cn_path = [const.PREPROCESSOR_DICT[i] for i in input_ns.preprocess_name.split('-')]
     else:
@@ -144,6 +144,8 @@ class Predictor(BasePredictor):
         os.environ["HF_DATASETS_CACHE"] = MODEL_CACHE
         if not os.path.exists(MODEL_CACHE):
             download_weights(SD_URL, MODEL_CACHE)
+        if not os.path.exists(CONTROL_CACHE):
+            download_weights(CONTROL_URL, CONTROL_CACHE)
 
     def predict(
         self,
@@ -154,8 +156,7 @@ class Predictor(BasePredictor):
             description="Control type",
             default="depth_zoe",
             choices=[
-                "lineart_releastic",
-                "lineart_coart",
+                "lineart_realistic",
                 "lineart_standard",
                 "lineart_anime",
                 "lineart_anime_denoise",
@@ -174,13 +175,12 @@ class Predictor(BasePredictor):
         seed: int = Input(description="Seed", default=0, ge=0, le=2147483647),
     ) -> Output:
         # Clear past run inputs and results, and create necessary directories
-        shutil.rmtree('./data/mp4_videos', ignore_errors=True)
+        os.system('rm -rf generated')
+        os.system('rm -rf ./data/mp4_videos')
         os.makedirs('./data/mp4_videos')
+        print("Video: ", video)
         shutil.copy(video, './data/mp4_videos/demo.mp4')
-        # shutil.rmtree('./results/cog', ignore_errors=True)
-        # os.makedirs('./results/cog')
-
-        # # Prepare inputs for run function
+        # Prepare inputs for run function
         output_path = run(
             './data/mp4_videos/demo.mp4',
             control_type,
@@ -197,6 +197,5 @@ class Predictor(BasePredictor):
             'checkpoints'
         )
         # print("Output pair: ", output_path)
-
         return Output(video=Path(output_path[0]), control=Path(output_path[1]))
     
